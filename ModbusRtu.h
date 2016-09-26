@@ -1,10 +1,12 @@
 /**
  * @file 	ModbusRtu.h
  * @version     1.21
- * @date        2016.02.21
+ * @date        2016.09.26
  * @author 	Samuel Marco i Armengol
  * @contact     sammarcoarmengol@gmail.com
  * @contribution Helium6072
+ * @modifications EDP Hackathon (Diogo Ribeiro, Francisco Santos, João Almeida, Jon Gallant)
+ * @modificationscontact     franciscomaria.santos@edp.pt
  *
  * @description
  *  Arduino library for communicating with Modbus devices
@@ -102,7 +104,8 @@ enum MB_FC
     MB_FC_WRITE_COIL               = 5,	/*!< FCT=5 -> write single coil or output */
     MB_FC_WRITE_REGISTER           = 6,	/*!< FCT=6 -> write single register */
     MB_FC_WRITE_MULTIPLE_COILS     = 15,	/*!< FCT=15 -> write multiple coils or outputs */
-    MB_FC_WRITE_MULTIPLE_REGISTERS = 16	/*!< FCT=16 -> write multiple registers */
+    MB_FC_WRITE_MULTIPLE_REGISTERS = 16,	/*!< FCT=16 -> write multiple registers */
+	MB_FC_READ_LOAD_PROFILE = 68	/*!< FCT=44 -> Read load profile entries */
 };
 
 enum COM_STATES
@@ -139,11 +142,13 @@ const unsigned char fctsupported[] =
     MB_FC_WRITE_COIL,
     MB_FC_WRITE_REGISTER,
     MB_FC_WRITE_MULTIPLE_COILS,
-    MB_FC_WRITE_MULTIPLE_REGISTERS
+    MB_FC_WRITE_MULTIPLE_REGISTERS,
+	MB_FC_READ_LOAD_PROFILE
 };
 
 #define T35  5
-#define  MAX_BUFFER  64	//!< maximum size for the communication buffer in bytes
+//#define  MAX_BUFFER  64	//!< maximum size for the communication buffer in bytes
+#define  MAX_BUFFER  254
 
 /**
  * @class Modbus
@@ -179,6 +184,7 @@ private:
     uint8_t validateRequest();
     void get_FC1();
     void get_FC3();
+	void get_FC44();
     int8_t process_FC1( uint16_t *regs, uint8_t u8size );
     int8_t process_FC3( uint16_t *regs, uint8_t u8size );
     int8_t process_FC5( uint16_t *regs, uint8_t u8size );
@@ -579,6 +585,11 @@ int8_t Modbus::query( modbus_t telegram )
     switch( telegram.u8fct )
     {
     case MB_FC_READ_COILS:
+	case MB_FC_READ_LOAD_PROFILE:
+	//	au8Buffer[ NB_HI ]      = highByte(telegram.u16CoilsNo ); //AINDA É PRECISO CONFIRMAR SE E POSSIVEL FAZER DESTA FORMA
+    //    au8Buffer[ NB_LO ]      = lowByte( telegram.u16CoilsNo );
+        u8BufferSize = 4;
+		break;
     case MB_FC_READ_DISCRETE_INPUT:
     case MB_FC_READ_REGISTERS:
     case MB_FC_READ_INPUT_REGISTER:
@@ -712,6 +723,11 @@ int8_t Modbus::poll()
         // call get_FC3 to transfer the incoming message to au16regs buffer
         get_FC3( );
         break;
+	case MB_FC_READ_LOAD_PROFILE :
+        // call get_FC3 to transfer the incoming message to au16regs buffer
+        get_FC44( );
+        break;	
+	
     case MB_FC_WRITE_COIL:
     case MB_FC_WRITE_REGISTER :
     case MB_FC_WRITE_MULTIPLE_COILS:
@@ -830,7 +846,7 @@ void Modbus::init(uint8_t u8id)
 {
     this->u8id = u8id;
     this->u8serno = 4;
-    this->u8txenpin = 0;
+    this->u8txenpin = 8;
     this->u16timeOut = 1000;
 }
 
@@ -1147,6 +1163,7 @@ void Modbus::buildException( uint8_t u8exception )
  * @ingroup register
  * TODO: finish its implementation
  */
+ 
 void Modbus::get_FC1()
 {
     uint8_t u8byte, i;
@@ -1172,6 +1189,20 @@ void Modbus::get_FC3()
     u8byte = 3;
 
     for (i=0; i< au8Buffer[ 2 ] /2; i++)
+    {
+        au16regs[ i ] = word(
+                            au8Buffer[ u8byte ],
+                            au8Buffer[ u8byte +1 ]);
+        u8byte += 2;
+    }
+}
+
+void Modbus::get_FC44()
+{
+    uint8_t u8byte, i;
+    u8byte = 3;
+
+    for (i=0; i< (au8Buffer[ 2 ] / 2) + 1; i++)
     {
         au16regs[ i ] = word(
                             au8Buffer[ u8byte ],
