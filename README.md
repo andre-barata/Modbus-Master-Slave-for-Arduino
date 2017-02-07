@@ -1,13 +1,23 @@
-README.txt
+# Modbus-Master-Slave-for-Arduino
 
-libmodbus is a library that provides a Serial Modbus implementation for Arduino.
+## EDP IoT Hackathon 2017
+
+This is a forked a version of the [Modbus-Master-Slave-for-Arduino](https://github.com/smarmengol/Modbus-Master-Slave-for-Arduino).
+We've added some extra functionality to the library, in order to ease the process of connecting the Akeru board to the EDP Boxes.
+
+---
+
+
+## INTRODUCTION
+
+Libmodbus is a library that provides a Serial Modbus implementation for Arduino.
 
 A primary goal was to enable industrial communication for the Arduino in order to link it to industrial devices such as HMIs, CNCs, PLCs, temperature regulators or speed drives.
 
 now you can use software serial with the update from Helium6072!
 
-LIBRARY CONTENTS
-=================================================================
+## LIBRARY CONTENTS
+
 LICENSE.txt			GNU Licence file
 keywords.txt		Arduino IDE colouring syntax
 
@@ -23,8 +33,8 @@ Sample sketches to implement miscellaneous settings:
 /examples/simple_slave		Modbus slave node with a link array
 /examples/software_serial_simple_master		Modbus master node that works via software serial
 
-INSTALLATION PROCEDURE
-=================================================================
+## INSTALLATION PROCEDURE
+
 Refer to this documentation to Install this library:
 
 http://arduino.cc/en/Guide/Libraries
@@ -44,13 +54,15 @@ The zip file will have been expanded in the libraries folder in your Arduino ske
 NB : the library will be available to use in sketches, but examples for the library will not be exposed in the File > Examples until after the IDE has restarted. 
 
 
-KNOWN ISSUES
-=================================================================
+## KNOWN ISSUES
+
+
 It is not compatible with ARDUINO LEONARDO and not tested under ARDUINO DUE and newer boards.
 
-TODO List
-=================================================================
-Common to Master and Slave:
+## TODO List
+
+
+- Common to Master and Slave:
 
 1) Implement other Serial settings: parity, stop bits, ...
 
@@ -60,7 +72,7 @@ Common to Master and Slave:
 
 4) Extend it to Leonardo
 
-Master:
+- Master:
 
 1) Function code 1 and 2 still not implemented
 
@@ -68,8 +80,9 @@ Master:
 
 3) Other codes under development
 
-New features by Helium6072 29 July 2016
-=================================================================
+## New features by Helium6072 29 July 2016
+
+
 1) "port->flush();" changed into "while(port->read() >= 0);"
 
 Since Serial.flush() (port->flush(); in ModbusRtu.h line 287, 337, & 827) no longer empties incoming buffer on 1.6 (Arduino.cc : flush() "Waits for the transmission of outgoing serial data to complete. Prior to Arduino 1.0, this instead removed any buffered incoming serial data.), use "while(port->read() >= 0);" instead.
